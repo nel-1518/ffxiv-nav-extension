@@ -168,6 +168,79 @@
   ];
 
   // ============================================================
+  // 拼音首字母映射表（仅含链接标题中的汉字）
+  // ============================================================
+  const PY_MAP = {
+    七:'q',下:'x',业:'y',丝:'s',中:'z',之:'z',书:'s',买:'m',争:'z',二:'e',人:'r',仓:'c',他:'t',伊:'y',
+    优:'y',传:'c',佑:'y',使:'s',保:'b',修:'x',值:'z',元:'y',充:'c',光:'g',公:'g',其:'q',具:'j',养:'y',
+    再:'z',冒:'m',冲:'c',况:'k',凉:'l',分:'f',划:'h',则:'z',初:'c',到:'d',前:'q',副:'f',加:'j',务:'w',
+    动:'d',助:'z',募:'m',勤:'q',包:'b',化:'h',南:'n',博:'b',厅:'t',台:'t',号:'h',吉:'j',同:'t',后:'h',
+    呆:'d',告:'g',周:'z',咖:'k',哔:'b',哩:'l',商:'s',啡:'f',器:'q',回:'h',城:'c',域:'y',境:'j',壁:'b',
+    声:'s',处:'c',外:'w',多:'d',大:'d',天:'t',宇:'y',官:'g',宙:'z',客:'k',宫:'g',家:'j',小:'x',尔:'e',
+    层:'c',屋:'w',岛:'d',常:'c',平:'p',幻:'h',库:'k',建:'j',开:'k',式:'s',录:'l',彩:'c',影:'y',待:'d',
+    微:'w',德:'d',心:'x',忆:'y',息:'x',情:'q',想:'x',戏:'x',成:'c',战:'z',房:'f',手:'s',抖:'d',报:'b',
+    拓:'t',招:'z',指:'z',据:'j',排:'p',探:'t',数:'s',斗:'d',料:'l',新:'x',方:'f',旅:'l',无:'w',明:'m',
+    晓:'x',晶:'j',暗:'a',曦:'x',更:'g',最:'z',月:'y',服:'f',朔:'s',本:'b',林:'l',格:'g',榜:'b',次:'c',
+    水:'s',永:'y',法:'f',活:'h',海:'h',消:'x',深:'s',清:'q',游:'y',灵:'l',灾:'z',炼:'l',物:'w',状:'z',
+    狒:'f',狱:'y',猜:'c',玛:'m',玩:'w',理:'l',瓜:'g',生:'s',用:'y',田:'t',申:'s',界:'j',的:'d',石:'s',
+    礼:'l',秘:'m',积:'j',穹:'q',突:'t',站:'z',竞:'j',章:'z',笔:'b',第:'d',签:'q',索:'s',红:'h',级:'j',
+    纷:'f',纸:'z',线:'x',细:'x',终:'z',结:'j',给:'g',绝:'j',罚:'f',翁:'w',者:'z',职:'z',舟:'z',苍:'c',
+    英:'y',荒:'h',莲:'l',萌:'m',虹:'h',行:'x',补:'b',表:'b',规:'g',计:'j',认:'r',讯:'x',记:'j',设:'s',
+    试:'s',话:'h',请:'q',账:'z',购:'g',费:'f',资:'z',赛:'s',超:'c',跨:'k',载:'z',辉:'h',边:'b',违:'w',
+    迪:'d',迷:'m',送:'s',道:'d',遗:'y',重:'z',量:'l',金:'j',铃:'l',银:'y',长:'z',阿:'a',陆:'l',陌:'m',
+    险:'x',雄:'x',零:'l',霸:'b',音:'y',餐:'c',驻:'z',鱼:'y',鲶:'n',鸟:'n',黄:'h',黎:'l',
+  };
+
+  // ============================================================
+  // 将字符串转为拼音首字母（非中文保留原字符）
+  // ============================================================
+  function toPinyinInitials(str) {
+    let result = '';
+    for (const ch of str) {
+      const lower = ch.toLowerCase();
+      if (ch >= '\u4e00' && ch <= '\u9fff') {
+        result += PY_MAP[ch] || '';
+      } else if ((lower >= 'a' && lower <= 'z') || (ch >= '0' && ch <= '9')) {
+        result += lower;
+      }
+    }
+    return result;
+  }
+
+  // ============================================================
+  // 搜索索引 — 由 linkCategories 构建扁平化链接列表
+  // ============================================================
+  function buildSearchIndex() {
+    const index = [];
+    linkCategories.forEach(cat => {
+      cat.links.forEach(link => {
+        index.push({
+          name: link.name,
+          url: link.url,
+          pinyin: toPinyinInitials(link.name),
+          categoryTitle: cat.title,
+          categoryIcon: cat.icon,
+          abbr: '',
+        });
+      });
+    });
+    // 将常用链接（含自定义缩写）追加到索引末尾
+    const favLinks = getFavLinks();
+    favLinks.forEach(link => {
+      index.push({
+        name: link.name,
+        url: link.url,
+        pinyin: toPinyinInitials(link.name),
+        categoryTitle: '常用链接',
+        categoryIcon: '⭐',
+        abbr: link.abbr || '',
+        isFav: true,
+      });
+    });
+    return index;
+  }
+
+  // ============================================================
   // 跨站存储抽象层 — 优先使用 GM_setValue/GM_getValue（跨站共享），
   // 降级到 localStorage（同站隔离）
   // ============================================================
@@ -306,11 +379,11 @@
     Store.set(FAV_KEY, links);
   }
 
-  function addFavLink(name, url, isCustom) {
+  function addFavLink(name, url, isCustom, abbr) {
     const links = getFavLinks();
     if (links.some(l => l.url === url)) return;
     if (links.length >= FAV_MAX) return;
-    links.push({ name, url, isCustom: !!isCustom });
+    links.push({ name, url, isCustom: !!isCustom, abbr: abbr || '' });
     saveFavLinks(links);
   }
 
@@ -587,7 +660,7 @@
     function updateFavCount() {
       const current = getFavLinks();
       headerSpan.textContent = '⭐ 常用链接' + (current.length > 0 ? ' (' + current.length + '/' + FAV_MAX + ')' : '');
-    }4
+    }
 
     // ---------- 保存常用栏排序 ----------
     function saveFavOrder() {
@@ -755,13 +828,36 @@
       urlInput.placeholder = '输入链接 (例: https://example.com)';
       Object.assign(urlInput.style, {
         width: '100%', boxSizing: 'border-box', padding: '8px 10px',
-        fontSize: '14px', borderRadius: '8px', marginBottom: '20px',
+        fontSize: '14px', borderRadius: '8px', marginBottom: '12px',
         backgroundColor: C.catBg, color: C.text, border: `1px solid ${C.border}`,
         outline: 'none',
       });
       urlInput.addEventListener('focus', () => { urlInput.style.borderColor = C.accent; });
       urlInput.addEventListener('blur', () => { urlInput.style.borderColor = C.border; });
       box.appendChild(urlInput);
+
+      // 缩写输入
+      const abbrLabel = document.createElement('div');
+      abbrLabel.textContent = '缩写（可选，字母，用于快速搜索）';
+      Object.assign(abbrLabel.style, { fontSize: '13px', color: C.catText, marginBottom: '4px' });
+      box.appendChild(abbrLabel);
+
+      const abbrInput = document.createElement('input');
+      abbrInput.type = 'text';
+      abbrInput.placeholder = '例: cz (自动转为小写)';
+      Object.assign(abbrInput.style, {
+        width: '100%', boxSizing: 'border-box', padding: '8px 10px',
+        fontSize: '14px', borderRadius: '8px', marginBottom: '20px',
+        backgroundColor: C.catBg, color: C.text, border: `1px solid ${C.border}`,
+        outline: 'none',
+      });
+      abbrInput.addEventListener('focus', () => { abbrInput.style.borderColor = C.accent; });
+      abbrInput.addEventListener('blur', () => { abbrInput.style.borderColor = C.border; });
+      // 实时过滤非字母字符并转小写
+      abbrInput.addEventListener('input', () => {
+        abbrInput.value = abbrInput.value.toLowerCase().replace(/[^a-z]/g, '');
+      });
+      box.appendChild(abbrInput);
 
       // 按钮行
       const btnRow = document.createElement('div');
@@ -792,11 +888,12 @@
       function confirmAdd() {
         const name = nameInput.value.trim();
         const url = urlInput.value.trim();
+        const abbr = abbrInput.value.trim();
         if (!name || !url) return;
 
-        addFavLink(name, url, true);
+        addFavLink(name, url, true, abbr);
 
-        const newRow = createFavRow({ name, url, isCustom: true });
+        const newRow = createFavRow({ name, url, isCustom: true, abbr });
         favGrid.insertBefore(newRow, addBtnRef);
         updateFavCount();
 
@@ -978,6 +1075,189 @@
     });
 
     header.appendChild(unofficialHint);
+
+    // ---- 搜索栏（支持拼音首字母 + 键盘导航）----
+    const searchIndex = buildSearchIndex();
+    const searchContainer = document.createElement('div');
+    Object.assign(searchContainer.style, {
+      position: 'relative',
+      margin: '0 8px',
+      flexShrink: '0',
+    });
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = '🔍 搜索链接[S]...';
+    Object.assign(searchInput.style, {
+      padding: '4px 12px',
+      fontSize: '13px',
+      borderRadius: '14px',
+      border: `1px solid ${C.border}`,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+      color: C.text,
+      outline: 'none',
+      width: '120px',
+      transition: 'all 0.25s',
+    });
+    searchInput.addEventListener('focus', () => {
+      searchInput.style.borderColor = C.accent;
+      searchInput.style.width = '180px';
+      searchInput.style.backgroundColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.07)';
+    });
+    searchInput.addEventListener('blur', () => {
+      searchInput.style.borderColor = C.border;
+      searchInput.style.width = '120px';
+      searchInput.style.backgroundColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)';
+      setTimeout(() => { dropdown.style.display = 'none'; selectedIdx = -1; }, 200);
+    });
+
+    // 搜索结果下拉
+    const dropdown = document.createElement('div');
+    Object.assign(dropdown.style, {
+      position: 'absolute',
+      top: '100%',
+      right: '0',
+      width: '300px',
+      maxHeight: '380px',
+      overflowY: 'auto',
+      backgroundColor: C.dialogBg,
+      border: `1px solid ${C.border}`,
+      borderRadius: '10px',
+      boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+      display: 'none',
+      zIndex: '10001',
+      marginTop: '6px',
+    });
+
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(dropdown);
+
+    let currentResults = [];
+    let selectedIdx = -1;
+
+    function openResult(item) {
+      window.open(item.url, '_blank');
+      dropdown.style.display = 'none';
+      searchInput.value = '';
+      currentResults = [];
+      selectedIdx = -1;
+    }
+
+    function renderDropdown() {
+      if (currentResults.length === 0) {
+        dropdown.innerHTML = '<div style="padding:12px;color:' + C.muted + ';font-size:13px;text-align:center;">未找到匹配链接</div>';
+        dropdown.style.display = 'block';
+        return;
+      }
+
+      dropdown.innerHTML = '';
+      currentResults.slice(0, 20).forEach((r, i) => {
+        const row = document.createElement('div');
+        const isSelected = i === selectedIdx;
+        Object.assign(row.style, {
+          padding: '8px 12px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '13px',
+          color: C.text,
+          borderBottom: `1px solid ${C.border}`,
+          transition: 'background 0.1s',
+          backgroundColor: isSelected ? C.linkHoverBg : 'transparent',
+        });
+        row.innerHTML =
+          '<span style="flex-shrink:0;">' + r.categoryIcon + '</span>' +
+          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + r.name + '</span>' +
+          '<span style="flex-shrink:0;font-size:11px;color:' + C.muted + ';">' + r.categoryTitle + '</span>';
+        row.dataset.idx = i;
+        row.addEventListener('mouseenter', () => {
+          row.style.backgroundColor = C.linkHoverBg;
+        });
+        row.addEventListener('mouseleave', () => {
+          if (i !== selectedIdx) row.style.backgroundColor = 'transparent';
+        });
+        row.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openResult(r);
+        });
+        dropdown.appendChild(row);
+      });
+      dropdown.style.display = 'block';
+
+      // 滚动到选中项
+      if (selectedIdx >= 0) {
+        const selRow = dropdown.querySelector('[data-idx="' + selectedIdx + '"]');
+        if (selRow) selRow.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    function doSearch(query) {
+      if (!query) {
+        dropdown.style.display = 'none';
+        selectedIdx = -1;
+        return;
+      }
+      let results = searchIndex.filter(item => {
+        const nameMatch = item.name.toLowerCase().includes(query);
+        const pinyinMatch = item.pinyin && item.pinyin.includes(query);
+        const catMatch = item.categoryTitle.toLowerCase().includes(query);
+        const abbrMatch = item.abbr && item.abbr.includes(query);
+        return nameMatch || pinyinMatch || catMatch || abbrMatch;
+      });
+      // 有缩写匹配的优先排在顶部
+      if (query.length > 0) {
+        results.sort((a, b) => {
+          const aAbbr = a.abbr && a.abbr.includes(query) ? 1 : 0;
+          const bAbbr = b.abbr && b.abbr.includes(query) ? 1 : 0;
+          return bAbbr - aAbbr;
+        });
+      }
+      currentResults = results;
+      selectedIdx = currentResults.length > 0 ? 0 : -1;
+      renderDropdown();
+    }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      doSearch(query);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (currentResults.length === 0) return;
+        selectedIdx = (selectedIdx + 1) % Math.min(currentResults.length, 20);
+        renderDropdown();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (currentResults.length === 0) return;
+        const max = Math.min(currentResults.length, 20);
+        selectedIdx = (selectedIdx - 1 + max) % max;
+        renderDropdown();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selectedIdx >= 0 && selectedIdx < currentResults.length) {
+          openResult(currentResults[selectedIdx]);
+        }
+      } else if (e.key === 'Escape') {
+        e.stopPropagation();
+        dropdown.style.display = 'none';
+        selectedIdx = -1;
+        searchInput.blur();
+      }
+    });
+
+    // 点击页面其他位置关闭下拉
+    const closeDropdown = (e) => {
+      if (!searchContainer.contains(e.target)) {
+        dropdown.style.display = 'none';
+        selectedIdx = -1;
+      }
+    };
+    document.addEventListener('click', closeDropdown, true);
+
+    header.appendChild(searchContainer);
 
     // 主题切换按钮
     const themeBtn = document.createElement('span');
@@ -1318,14 +1598,21 @@
       }
     });
 
-    // ESC 关闭
-    const escHandler = (e) => {
+    // ESC 关闭 + S 键聚焦搜索
+    const focusHandler = (e) => {
       if (e.key === 'Escape') {
         overlay.remove();
-        document.removeEventListener('keydown', escHandler);
+        document.removeEventListener('keydown', focusHandler);
+      } else if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
+        const tag = document.activeElement && document.activeElement.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
       }
     };
-    document.addEventListener('keydown', escHandler);
+    document.addEventListener('keydown', focusHandler);
 
     return overlay;
   }
@@ -1348,7 +1635,7 @@
       transition: 'all 0.15s',
       verticalAlign: 'middle',
       userSelect: 'none',
-      backgroundColor: '#6D99BC',
+      backgroundColor: bgColor,
       boxShadow: '0 2px 8px rgba(115, 191, 230, 0.15)',
       height: '32px',
       lineHeight: '32px',
@@ -1397,6 +1684,17 @@
         hoverTimer = null;
       }
       openDialog();
+    });
+
+    // 全局 F 键快捷键打开导航对话框
+    window.addEventListener('keydown', function fKeyHandler(e) {
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = document.activeElement && document.activeElement.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          e.preventDefault();
+          openDialog();
+        }
+      }
     });
 
     return navBtn;
