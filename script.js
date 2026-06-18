@@ -221,10 +221,10 @@
           categoryTitle: cat.title,
           categoryIcon: cat.icon,
           abbr: '',
+          priority: 0, // 来源链接优先级最低
         });
       });
     });
-    // 将常用链接（含自定义缩写）追加到索引末尾
     const favLinks = getFavLinks();
     favLinks.forEach(link => {
       index.push({
@@ -234,7 +234,7 @@
         categoryTitle: '常用链接',
         categoryIcon: '⭐',
         abbr: link.abbr || '',
-        isFav: true,
+        priority: link.isCustom ? 2 : 1, // 自定义=2最高，收藏=1，来源=0
       });
     });
     return index;
@@ -447,7 +447,7 @@
   // ============================================================
   // 常用栏模块 — 生成独立的全宽四列网格区域
   // ============================================================
-  function createFavModule(C, linkGrid, isDark) {
+  function createFavModule(C, linkGrid, isDark, searchIndex) {
     const favLinks = getFavLinks();
 
     const favSection = document.createElement('div');
@@ -625,6 +625,10 @@
       delBtn.addEventListener('click', (e) => {
         e.preventDefault(); e.stopPropagation();
         removeFavLink(link.url);
+        // 从存储重建搜索索引
+        const rebuilt = buildSearchIndex();
+        searchIndex.length = 0;
+        searchIndex.push(...rebuilt);
         row.remove();
         updateFavCount();
         if (!isCustom) {
@@ -892,6 +896,13 @@
         if (!name || !url) return;
 
         addFavLink(name, url, true, abbr);
+
+        // 从存储重建搜索索引
+        if (searchIndex) {
+          const rebuilt = buildSearchIndex();
+          searchIndex.length = 0;
+          searchIndex.push(...rebuilt);
+        }
 
         const newRow = createFavRow({ name, url, isCustom: true, abbr });
         favGrid.insertBefore(newRow, addBtnRef);
@@ -1205,14 +1216,13 @@
         const abbrMatch = item.abbr && item.abbr.includes(query);
         return nameMatch || pinyinMatch || catMatch || abbrMatch;
       });
-      // 有缩写匹配的优先排在顶部
-      if (query.length > 0) {
-        results.sort((a, b) => {
-          const aAbbr = a.abbr && a.abbr.includes(query) ? 1 : 0;
-          const bAbbr = b.abbr && b.abbr.includes(query) ? 1 : 0;
-          return bAbbr - aAbbr;
-        });
-      }
+      // 优先级：自定义(2) > 常用链接(1) > 来源链接(0)，同优先级内缩写匹配优先
+      results.sort((a, b) => {
+        if (a.priority !== b.priority) return b.priority - a.priority;
+        const aAbbr = a.abbr && a.abbr.includes(query) ? 1 : 0;
+        const bAbbr = b.abbr && b.abbr.includes(query) ? 1 : 0;
+        return bAbbr - aAbbr;
+      });
       currentResults = results;
       selectedIdx = currentResults.length > 0 ? 0 : -1;
       renderDropdown();
@@ -1485,7 +1495,7 @@
     });
 
     // ========== 常用栏模块（需要 linkGrid 引用） ==========
-    const favModule = createFavModule(C, linkGrid, isDark);
+    const favModule = createFavModule(C, linkGrid, isDark, searchIndex);
     const { favSection, favGrid: favCol, favHeader: favTitle, createFavRow, updateFavCount, restorePinButton, addBtnRef } = favModule;
     const favLinks = getFavLinks();
 
