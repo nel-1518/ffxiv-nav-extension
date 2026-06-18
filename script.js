@@ -296,7 +296,7 @@
   // 常用链接存储（固定+自定义，上限 24）
   // ============================================================
   const FAV_KEY = 'ff14_fav_links';
-  const FAV_MAX = 24;
+  const FAV_MAX = 12;
 
   function getFavLinks() {
     return Store.get(FAV_KEY, []);
@@ -343,6 +343,34 @@
     Store.set(COLLAPSED_KEY, val ? true : false);
   }
 
+  // 最新活动收起状态
+  const ACTIVITY_COLLAPSED_KEY = 'ff14_activity_collapsed';
+
+  function getActivityCollapsed() {
+    return Store.get(ACTIVITY_COLLAPSED_KEY, false) === true;
+  }
+
+  function setActivityCollapsed(val) {
+    Store.set(ACTIVITY_COLLAPSED_KEY, val ? true : false);
+  }
+
+  // ============================================================
+  // 通用：创建标题元素（圆角）
+  // ============================================================
+  function createSectionTitle(text, C, isDark, extraStyle = {}) {
+    const el = document.createElement('div');
+    el.textContent = text;
+    Object.assign(el.style, {
+      fontSize: '15px', fontWeight: '700', color: C.catText,
+      letterSpacing: '1px',
+      padding: '7px 18px',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.5)',
+      borderRadius: '8px',
+      ...extraStyle,
+    });
+    return el;
+  }
+
   // ============================================================
   // 常用栏模块 — 生成独立的全宽四列网格区域
   // ============================================================
@@ -351,16 +379,14 @@
 
     const favSection = document.createElement('div');
     Object.assign(favSection.style, {
-      marginBottom: '12px',
-      paddingBottom: '12px',
-      borderBottom: `1px solid ${C.divider}`,
+      marginBottom: '10px',
     });
 
     const favHeader = document.createElement('div');
     const isInitCollapsed = getCollapsed();
     favHeader.dataset.collapsed = isInitCollapsed ? 'true' : 'false';
     const headerSpan = document.createElement('span');
-    headerSpan.textContent = '⭐ 常用' + (favLinks.length > 0 ? ' (' + favLinks.length + '/' + FAV_MAX + ')' : '');
+    headerSpan.textContent = '⭐ 常用链接' + (favLinks.length > 0 ? ' (' + favLinks.length + '/' + FAV_MAX + ')' : '');
     const toggleHint = document.createElement('span');
     toggleHint.textContent = isInitCollapsed ? ' [展开]' : ' [收起]';
     Object.assign(toggleHint.style, {
@@ -368,9 +394,14 @@
     });
     Object.assign(favHeader.style, {
       fontSize: '15px', fontWeight: '700', color: C.catText,
-      backgroundColor: C.catBg, letterSpacing: '1px',
-      padding: '7px 12px', borderRadius: '8px', marginBottom: '8px',
+      letterSpacing: '1px',
+      padding: '0 18px', height: '40px', lineHeight: '40px',
       cursor: 'pointer', userSelect: 'none',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.5)',
+      boxShadow: isDark
+        ? '0 2px 12px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(255, 255, 255, 0.04)'
+        : '0 2px 16px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(255, 255, 255, 0.6)',
+      clipPath: 'polygon(12px 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0% 50%)',
     });
     favHeader.appendChild(headerSpan);
     favHeader.appendChild(toggleHint);
@@ -402,7 +433,8 @@
     Object.assign(favGrid.style, {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr 1fr 1fr',
-      gap: '2px 18px',
+      gap: '2px 14px',
+      padding: '10px 0',
       minWidth: '0',
     });
 
@@ -498,9 +530,9 @@
       item.target = '_blank';
       item.rel = 'noopener';
       Object.assign(item.style, {
-        flex: '1', display: 'block', padding: '8px 8px 8px 12px',
-        borderRadius: '6px', color: C.favLink,
-        textDecoration: 'none', fontSize: '16px', fontWeight: '700',
+        flex: '1', display: 'block', padding: '10px 8px 10px 12px',
+        borderRadius: '4px', color: C.favLink,
+        textDecoration: 'underline', textUnderlineOffset: '3px', fontSize: '16px', fontWeight: '500',
         transition: 'all 0.15s', cursor: 'pointer',
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         textShadow: C.linkShadow,
@@ -533,7 +565,7 @@
 
       row.addEventListener('mouseenter', () => {
         item.style.backgroundColor = C.linkHoverBg;
-        item.style.color = C.favHover;
+        item.style.color = C.accent;
         item.style.paddingLeft = '16px';
         delBtn.style.display = 'block';
         dragHandle.style.display = 'block';
@@ -554,8 +586,8 @@
 
     function updateFavCount() {
       const current = getFavLinks();
-      headerSpan.textContent = '⭐ 常用' + (current.length > 0 ? ' (' + current.length + '/' + FAV_MAX + ')' : '');
-    }
+      headerSpan.textContent = '⭐ 常用链接' + (current.length > 0 ? ' (' + current.length + '/' + FAV_MAX + ')' : '');
+    }4
 
     // ---------- 保存常用栏排序 ----------
     function saveFavOrder() {
@@ -873,9 +905,8 @@
     Object.assign(dialog.style, {
       backgroundColor: 'rgba(0, 0, 0, 0)',
       background: isDark
-        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.9) 10%, rgba(32, 35, 40, 0.9) 90%)'
-        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.9) 10%, rgba(252, 254, 255, 0.9) 90%)',
-      backdropFilter: 'blur(5px)',
+        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.92) 10%, rgba(32, 35, 40, 0.92) 90%)'
+        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.92) 10%, rgba(242, 244, 245, 0.92) 90%)',
       borderRadius: C.dialogBorderRadius,
       padding: '35px 35px',
       maxWidth: '820px',
@@ -985,98 +1016,183 @@
       marginBottom: '10px',
     });
 
-    // 加载中提示
-    const loadingText = document.createElement('div');
-    loadingText.textContent = '加载中...';
-    Object.assign(loadingText.style, {
-      fontSize: '12px',
-      color: C.muted,
-      padding: '10px 14px',
+    // 先创建标题栏和可折叠容器，再决定是否发起请求
+    const isActCollapsed = getActivityCollapsed();
+
+    const titleBar = document.createElement('div');
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = '📣 最新活动';
+    const actToggleHint = document.createElement('span');
+    actToggleHint.textContent = isActCollapsed ? ' [展开]' : ' [收起]';
+    Object.assign(actToggleHint.style, {
+      fontSize: '12px', fontWeight: '400', color: C.muted, marginLeft: '8px',
     });
-    activitySection.appendChild(loadingText);
+    Object.assign(titleBar.style, {
+      fontSize: '15px', fontWeight: '700', color: C.catText,
+      letterSpacing: '1px',
+      padding: '0 18px', height: '40px', lineHeight: '40px', cursor: 'pointer', userSelect: 'none',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.5)',
+      clipPath: 'polygon(12px 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0% 50%)',
+    });
+    titleBar.appendChild(titleSpan);
+    titleBar.appendChild(actToggleHint);
+    activitySection.appendChild(titleBar);
 
-    // 异步获取活动数据 — 用 GM_xmlhttpRequest 绕过 CORS
-    fetchViaGM('https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5203&pageIndex=0&pageSize=5')
-      .then(res => {
-        const data = res.Data || [];
-        if (!data.length) {
-          loadingText.textContent = '暂无最新活动';
-          return;
-        }
+    titleBar.dataset.collapsed = isActCollapsed ? 'true' : 'false';
 
-        activitySection.innerHTML = '';
+    const actCollapse = document.createElement('div');
+    Object.assign(actCollapse.style, {
+      overflow: 'hidden',
+      maxHeight: isActCollapsed ? '0' : '2000px',
+      opacity: isActCollapsed ? '0' : '1',
+      transition: 'max-height 0.35s ease, opacity 0.25s ease',
+    });
+    activitySection.appendChild(actCollapse);
 
-        // 标题栏 — 与其他分类标题样式一致
-        const titleBar = document.createElement('div');
-        titleBar.textContent = '📢 最新活动';
-        Object.assign(titleBar.style, {
-          fontSize: '15px',
-          fontWeight: '700',
-          color: C.catText,
-          backgroundColor: C.catBg,
-          letterSpacing: '1px',
-          padding: '7px 12px',
-          borderRadius: '8px',
-          margin: '0',
-        });
-        activitySection.appendChild(titleBar);
+    // 数据加载完成（已展开）后再支持普通展开/收起切换
+    let dataLoaded = false;
 
-        // 图片网格 — 全部展示，居中排列
-        const imgRow = document.createElement('div');
-        Object.assign(imgRow.style, {
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px',
-          justifyContent: 'center',
-          padding: '10px 14px',
-        });
+    function buildActivityList(data) {
+      dataLoaded = true;
 
-        data.forEach(item => {
-          const imgUrl = item.HomeImagePath || '';
-          if (!imgUrl) return;
+      // 活动标题列表 — 每行一个标题，点击可跳转
+      // 含"季节活动"的标题加粗并置顶
+      const seasonalItems = data.filter(item => (item.Title || '').includes('季节活动'));
+      const normalItems = data.filter(item => !(item.Title || '').includes('季节活动'));
+      const sortedItems = [...seasonalItems, ...normalItems];
 
-          const link = document.createElement('a');
-          link.href = item.OutLink || '#';
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.title = item.Title || '';
-          Object.assign(link.style, {
-            display: 'block',
-            flexShrink: '0',
-            overflow: 'hidden',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0px 3px 6px 0px rgba(0, 0, 0, 0.2), 0px 1px 2px 0px rgba(0, 0, 0, 0.2)',
-          });
-          link.addEventListener('mouseenter', () => {
-            link.style.transform = 'translateY(-3px)';
-          });
-          link.addEventListener('mouseleave', () => {
-            link.style.transform = '';
-          });
-
-          const img = document.createElement('img');
-          img.src = imgUrl;
-          img.alt = item.Title || '';
-          img.loading = 'lazy';
-          // 735:394 ≈ 1.866 比例，宽度固定 138px，高度自适应
-          Object.assign(img.style, {
-            display: 'block',
-            width: '138px',
-            height: 'auto',
-            aspectRatio: '735 / 394',
-            outline: '1px solid rgba(255, 255, 255, 0.8)',
-            outlineOffset: '-5px',
-          });
-
-          link.appendChild(img);
-          imgRow.appendChild(link);
-        });
-
-        activitySection.appendChild(imgRow);
-      })
-      .catch(() => {
-        loadingText.textContent = '加载失败';
+      const listContainer = document.createElement('div');
+      Object.assign(listContainer.style, {
+        padding: '6px 12px 10px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
       });
+
+      sortedItems.forEach(item => {
+        const isSeasonal = (item.Title || '').includes('季节活动');
+        const link = document.createElement('a');
+        link.href = item.OutLink || '#';
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = item.Title || '';
+        Object.assign(link.style, {
+          display: 'block',
+          padding: '5px 10px',
+          color: C.link,
+          textDecoration: 'none',
+          fontSize: '13px',
+          fontWeight: isSeasonal ? '700' : '400',
+          borderRadius: '4px',
+          transition: 'all 0.15s',
+          textShadow: C.linkShadow,
+          background: 'transparent',
+        });
+        link.addEventListener('mouseenter', () => {
+          link.style.backgroundColor = C.linkHoverBg;
+          link.style.color = C.accent;
+          link.style.paddingLeft = '14px';
+        });
+        link.addEventListener('mouseleave', () => {
+          link.style.backgroundColor = 'transparent'
+          link.style.color = C.link;
+          link.style.paddingLeft = '10px';
+        });
+        listContainer.appendChild(link);
+      });
+
+      actCollapse.appendChild(listContainer);
+    }
+
+    // 展开/收起切换（含首次展开时加载）
+    titleBar.addEventListener('click', () => {
+      const collapsed = titleBar.dataset.collapsed === 'true';
+      const newVal = !collapsed;
+
+      // 如果是收起状态 → 点击展开，且数据尚未加载 → 发起请求
+      if (collapsed && !dataLoaded) {
+        // 加载中提示
+        const loadingEl = document.createElement('div');
+        loadingEl.textContent = '加载中...';
+        Object.assign(loadingEl.style, {
+          fontSize: '12px', color: C.muted, padding: '10px 14px',
+        });
+        actCollapse.appendChild(loadingEl);
+
+        titleBar.dataset.collapsed = 'false';
+        setActivityCollapsed(false);
+        actCollapse.style.maxHeight = '2000px';
+        actCollapse.style.opacity = '1';
+        actToggleHint.textContent = ' [收起]';
+
+        fetchViaGM('https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5203&pageIndex=0&pageSize=5')
+          .then(res => {
+            const data = res.Data || [];
+            actCollapse.innerHTML = '';
+            if (!data.length) {
+              const emptyEl = document.createElement('div');
+              emptyEl.textContent = '暂无最新活动';
+              Object.assign(emptyEl.style, {
+                fontSize: '12px', color: C.muted, padding: '10px 14px',
+              });
+              actCollapse.appendChild(emptyEl);
+              return;
+            }
+            buildActivityList(data);
+          })
+          .catch(() => {
+            actCollapse.innerHTML = '';
+            const errEl = document.createElement('div');
+            errEl.textContent = '加载失败';
+            Object.assign(errEl.style, {
+              fontSize: '12px', color: C.muted, padding: '10px 14px',
+            });
+            actCollapse.appendChild(errEl);
+          });
+        return;
+      }
+
+      titleBar.dataset.collapsed = newVal ? 'true' : 'false';
+      setActivityCollapsed(newVal);
+      actCollapse.style.maxHeight = newVal ? '0' : '2000px';
+      actCollapse.style.opacity = newVal ? '0' : '1';
+      actToggleHint.textContent = newVal ? ' [展开]' : ' [收起]';
+    });
+
+    // 如果初始为展开状态，立即加载数据
+    if (!isActCollapsed) {
+      const loadingEl = document.createElement('div');
+      loadingEl.textContent = '加载中...';
+      Object.assign(loadingEl.style, {
+        fontSize: '12px', color: C.muted, padding: '10px 14px',
+      });
+      actCollapse.appendChild(loadingEl);
+
+      fetchViaGM('https://cqnews.web.sdo.com/api/news/newsList?gameCode=ff&CategoryCode=5203&pageIndex=0&pageSize=5')
+        .then(res => {
+          const data = res.Data || [];
+          actCollapse.innerHTML = '';
+          if (!data.length) {
+            const emptyEl = document.createElement('div');
+            emptyEl.textContent = '暂无最新活动';
+            Object.assign(emptyEl.style, {
+              fontSize: '12px', color: C.muted, padding: '10px 14px',
+            });
+            actCollapse.appendChild(emptyEl);
+            return;
+          }
+          buildActivityList(data);
+        })
+        .catch(() => {
+          actCollapse.innerHTML = '';
+          const errEl = document.createElement('div');
+          errEl.textContent = '加载失败';
+          Object.assign(errEl.style, {
+            fontSize: '12px', color: C.muted, padding: '10px 14px',
+          });
+          actCollapse.appendChild(errEl);
+        });
+    }
 
 
     // ========== 链接区域 — 四列网格布局 ==========
@@ -1102,14 +1218,7 @@
         minWidth: '0',
       });
 
-      // 分类标题
-      const catTitle = document.createElement('div');
-      catTitle.textContent = (category.icon || '') + ' ' + category.title;
-      Object.assign(catTitle.style, {
-        fontSize: '15px', fontWeight: '700', color: C.catText,
-        backgroundColor: C.catBg, letterSpacing: '1px',
-        padding: '7px 12px', borderRadius: '8px', marginBottom: '6px',
-      });
+      const catTitle = createSectionTitle((category.icon || '') + ' ' + category.title, C, isDark, { marginBottom: '8px' });
       column.appendChild(catTitle);
 
       category.links.forEach((link) => {
@@ -1197,8 +1306,8 @@
     }
 
     dialog.appendChild(header);
-    if (activitySection) dialog.appendChild(activitySection);
     dialog.appendChild(favSection);
+    if (activitySection) dialog.appendChild(activitySection);
     dialog.appendChild(linkGrid);
     overlay.appendChild(dialog);
 
