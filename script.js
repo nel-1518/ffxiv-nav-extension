@@ -22,8 +22,19 @@
   const BTN_TEXT = 'FF14 官网导航';
 
   // ============================================================
-  // 链接分类配置
+  // 快捷键配置（可按需修改）
   // ============================================================
+  const SHORTCUT = {
+    // 打开/关闭导航对话框（在非输入框状态下按下）
+    TOGGLE_DIALOG: 'f',
+    // 聚焦到搜索框（在非输入框状态下按下，对话框已打开时有效）
+    FOCUS_SEARCH: 's',
+    // 数字 1~8: 在任意页面打开常用链接中第 1~8 个（在非输入框状态下按下）
+    // 无需快捷键的链接可设为 ''（例：FAV_8: '' 禁用第 8 个）
+    FAV_1: '1', FAV_2: '2', FAV_3: '3', FAV_4: '4',
+    FAV_5: '5', FAV_6: '6', FAV_7: '7', FAV_8: '8',
+  };
+
   const linkCategories = [
     {
       title: '消费充值', icon: '💰',
@@ -171,24 +182,24 @@
   // 拼音首字母映射表（仅含链接标题中的汉字）
   // ============================================================
   const PY_MAP = {
-    七:'q',下:'x',业:'y',丝:'s',中:'z',之:'z',书:'s',买:'m',争:'z',二:'e',人:'r',仓:'c',他:'t',伊:'y',
-    优:'y',传:'c',佑:'y',使:'s',保:'b',修:'x',值:'z',元:'y',充:'c',光:'g',公:'g',其:'q',具:'j',养:'y',
-    再:'z',冒:'m',冲:'c',况:'k',凉:'l',分:'f',划:'h',则:'z',初:'c',到:'d',前:'q',副:'f',加:'j',务:'w',
-    动:'d',助:'z',募:'m',勤:'q',包:'b',化:'h',南:'n',博:'b',厅:'t',台:'t',号:'h',吉:'j',同:'t',后:'h',
-    呆:'d',告:'g',周:'z',咖:'k',哔:'b',哩:'l',商:'s',啡:'f',器:'q',回:'h',城:'c',域:'y',境:'j',壁:'b',
-    声:'s',处:'c',外:'w',多:'d',大:'d',天:'t',宇:'y',官:'g',宙:'z',客:'k',宫:'g',家:'j',小:'x',尔:'e',
-    层:'c',屋:'w',岛:'d',常:'c',平:'p',幻:'h',库:'k',建:'j',开:'k',式:'s',录:'l',彩:'c',影:'y',待:'d',
-    微:'w',德:'d',心:'x',忆:'y',息:'x',情:'q',想:'x',戏:'x',成:'c',战:'z',房:'f',手:'s',抖:'d',报:'b',
-    拓:'t',招:'z',指:'z',据:'j',排:'p',探:'t',数:'s',斗:'d',料:'l',新:'x',方:'f',旅:'l',无:'w',明:'m',
-    晓:'x',晶:'j',暗:'a',曦:'x',更:'g',最:'z',月:'y',服:'f',朔:'s',本:'b',林:'l',格:'g',榜:'b',次:'c',
-    水:'s',永:'y',法:'f',活:'h',海:'h',消:'x',深:'s',清:'q',游:'y',灵:'l',灾:'z',炼:'l',物:'w',状:'z',
-    狒:'f',狱:'y',猜:'c',玛:'m',玩:'w',理:'l',瓜:'g',生:'s',用:'y',田:'t',申:'s',界:'j',的:'d',石:'s',
-    礼:'l',秘:'m',积:'j',穹:'q',突:'t',站:'z',竞:'j',章:'z',笔:'b',第:'d',签:'q',索:'s',红:'h',级:'j',
-    纷:'f',纸:'z',线:'x',细:'x',终:'z',结:'j',给:'g',绝:'j',罚:'f',翁:'w',者:'z',职:'z',舟:'z',苍:'c',
-    英:'y',荒:'h',莲:'l',萌:'m',虹:'h',行:'x',补:'b',表:'b',规:'g',计:'j',认:'r',讯:'x',记:'j',设:'s',
-    试:'s',话:'h',请:'q',账:'z',购:'g',费:'f',资:'z',赛:'s',超:'c',跨:'k',载:'z',辉:'h',边:'b',违:'w',
-    迪:'d',迷:'m',送:'s',道:'d',遗:'y',重:'z',量:'l',金:'j',铃:'l',银:'y',长:'z',阿:'a',陆:'l',陌:'m',
-    险:'x',雄:'x',零:'l',霸:'b',音:'y',餐:'c',驻:'z',鱼:'y',鲶:'n',鸟:'n',黄:'h',黎:'l',
+    七: 'q', 下: 'x', 业: 'y', 丝: 's', 中: 'z', 之: 'z', 书: 's', 买: 'm', 争: 'z', 二: 'e', 人: 'r', 仓: 'c', 他: 't', 伊: 'y',
+    优: 'y', 传: 'c', 佑: 'y', 使: 's', 保: 'b', 修: 'x', 值: 'z', 元: 'y', 充: 'c', 光: 'g', 公: 'g', 其: 'q', 具: 'j', 养: 'y',
+    再: 'z', 冒: 'm', 冲: 'c', 况: 'k', 凉: 'l', 分: 'f', 划: 'h', 则: 'z', 初: 'c', 到: 'd', 前: 'q', 副: 'f', 加: 'j', 务: 'w',
+    动: 'd', 助: 'z', 募: 'm', 勤: 'q', 包: 'b', 化: 'h', 南: 'n', 博: 'b', 厅: 't', 台: 't', 号: 'h', 吉: 'j', 同: 't', 后: 'h',
+    呆: 'd', 告: 'g', 周: 'z', 咖: 'k', 哔: 'b', 哩: 'l', 商: 's', 啡: 'f', 器: 'q', 回: 'h', 城: 'c', 域: 'y', 境: 'j', 壁: 'b',
+    声: 's', 处: 'c', 外: 'w', 多: 'd', 大: 'd', 天: 't', 宇: 'y', 官: 'g', 宙: 'z', 客: 'k', 宫: 'g', 家: 'j', 小: 'x', 尔: 'e',
+    层: 'c', 屋: 'w', 岛: 'd', 常: 'c', 平: 'p', 幻: 'h', 库: 'k', 建: 'j', 开: 'k', 式: 's', 录: 'l', 彩: 'c', 影: 'y', 待: 'd',
+    微: 'w', 德: 'd', 心: 'x', 忆: 'y', 息: 'x', 情: 'q', 想: 'x', 戏: 'x', 成: 'c', 战: 'z', 房: 'f', 手: 's', 抖: 'd', 报: 'b',
+    拓: 't', 招: 'z', 指: 'z', 据: 'j', 排: 'p', 探: 't', 数: 's', 斗: 'd', 料: 'l', 新: 'x', 方: 'f', 旅: 'l', 无: 'w', 明: 'm',
+    晓: 'x', 晶: 'j', 暗: 'a', 曦: 'x', 更: 'g', 最: 'z', 月: 'y', 服: 'f', 朔: 's', 本: 'b', 林: 'l', 格: 'g', 榜: 'b', 次: 'c',
+    水: 's', 永: 'y', 法: 'f', 活: 'h', 海: 'h', 消: 'x', 深: 's', 清: 'q', 游: 'y', 灵: 'l', 灾: 'z', 炼: 'l', 物: 'w', 状: 'z',
+    狒: 'f', 狱: 'y', 猜: 'c', 玛: 'm', 玩: 'w', 理: 'l', 瓜: 'g', 生: 's', 用: 'y', 田: 't', 申: 's', 界: 'j', 的: 'd', 石: 's',
+    礼: 'l', 秘: 'm', 积: 'j', 穹: 'q', 突: 't', 站: 'z', 竞: 'j', 章: 'z', 笔: 'b', 第: 'd', 签: 'q', 索: 's', 红: 'h', 级: 'j',
+    纷: 'f', 纸: 'z', 线: 'x', 细: 'x', 终: 'z', 结: 'j', 给: 'g', 绝: 'j', 罚: 'f', 翁: 'w', 者: 'z', 职: 'z', 舟: 'z', 苍: 'c',
+    英: 'y', 荒: 'h', 莲: 'l', 萌: 'm', 虹: 'h', 行: 'x', 补: 'b', 表: 'b', 规: 'g', 计: 'j', 认: 'r', 讯: 'x', 记: 'j', 设: 's',
+    试: 's', 话: 'h', 请: 'q', 账: 'z', 购: 'g', 费: 'f', 资: 'z', 赛: 's', 超: 'c', 跨: 'k', 载: 'z', 辉: 'h', 边: 'b', 违: 'w',
+    迪: 'd', 迷: 'm', 送: 's', 道: 'd', 遗: 'y', 重: 'z', 量: 'l', 金: 'j', 铃: 'l', 银: 'y', 长: 'z', 阿: 'a', 陆: 'l', 陌: 'm',
+    险: 'x', 雄: 'x', 零: 'l', 霸: 'b', 音: 'y', 餐: 'c', 驻: 'z', 鱼: 'y', 鲶: 'n', 鸟: 'n', 黄: 'h', 黎: 'l',
   };
 
   // ============================================================
@@ -1013,8 +1024,9 @@
     Object.assign(dialog.style, {
       backgroundColor: 'rgba(0, 0, 0, 0)',
       background: isDark
-        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.92) 10%, rgba(32, 35, 40, 0.92) 90%)'
-        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.92) 10%, rgba(242, 244, 245, 0.92) 90%)',
+        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.9) 10%, rgba(32, 35, 40, 0.9) 90%)'
+        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.9) 10%, rgba(242, 244, 245, 0.9) 90%)',
+      backdropFilter: 'blur(12px)',
       borderRadius: C.dialogBorderRadius,
       padding: '35px 35px',
       maxWidth: '820px',
@@ -1098,7 +1110,7 @@
 
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
-    searchInput.placeholder = '🔍 搜索链接[S]...';
+    searchInput.placeholder = '🔍 搜索链接[' + SHORTCUT.FOCUS_SEARCH.toUpperCase() + ']...';
     Object.assign(searchInput.style, {
       padding: '4px 12px',
       fontSize: '13px',
@@ -1608,12 +1620,12 @@
       }
     });
 
-    // ESC 关闭 + S 键聚焦搜索
+    // ESC 关闭对话框 + SHORTCUT.FOCUS_SEARCH 聚焦搜索
     const focusHandler = (e) => {
       if (e.key === 'Escape') {
         overlay.remove();
         document.removeEventListener('keydown', focusHandler);
-      } else if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
+      } else if ((e.key === SHORTCUT.FOCUS_SEARCH || e.key === SHORTCUT.FOCUS_SEARCH.toUpperCase()) && !e.ctrlKey && !e.metaKey) {
         const tag = document.activeElement && document.activeElement.tagName;
         if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
           e.preventDefault();
@@ -1696,13 +1708,36 @@
       openDialog();
     });
 
-    // 全局 F 键快捷键打开导航对话框
-    window.addEventListener('keydown', function fKeyHandler(e) {
-      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const tag = document.activeElement && document.activeElement.tagName;
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
-          e.preventDefault();
-          openDialog();
+    // 全局快捷键 — SHORTCUT.TOGGLE_DIALOG 打开对话框；数字 1~8 打开常用链接
+    window.addEventListener('keydown', function globalKeyHandler(e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      // 打开导航对话框
+      if (e.key === SHORTCUT.TOGGLE_DIALOG || e.key === SHORTCUT.TOGGLE_DIALOG.toUpperCase()) {
+        e.preventDefault();
+        openDialog();
+        return;
+      }
+
+      // 数字 1~8 打开对应常用链接
+      const favKeyMap = {
+        [SHORTCUT.FAV_1]: 0,
+        [SHORTCUT.FAV_2]: 1,
+        [SHORTCUT.FAV_3]: 2,
+        [SHORTCUT.FAV_4]: 3,
+        [SHORTCUT.FAV_5]: 4,
+        [SHORTCUT.FAV_6]: 5,
+        [SHORTCUT.FAV_7]: 6,
+        [SHORTCUT.FAV_8]: 7,
+      };
+      const favIdx = favKeyMap[e.key];
+      if (favIdx !== undefined) {
+        e.preventDefault();
+        const favLinks = getFavLinks();
+        if (favLinks[favIdx]) {
+          window.open(favLinks[favIdx].url, '_blank');
         }
       }
     });
