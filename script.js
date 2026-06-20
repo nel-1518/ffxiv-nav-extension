@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FF14 官网导航
-// @namespace    https://github.com/nel-1518/ffxiv-nav-extension
+// @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  在 FF14 官网/石之家/NGA 增加一个按钮，用于打开导航窗口，方便访问 FF14 国服官网中的各种链接，也可以自定义常用链接快速访问。
 // @author       Nel
@@ -14,6 +14,7 @@
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
 // @connect      cqnews.web.sdo.com
+// @license      MIT
 // ==/UserScript==
 
 (function () {
