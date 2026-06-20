@@ -21,6 +21,9 @@
 
   const BTN_TEXT = 'FF14 官网导航';
 
+  // 常用链接上限
+  const FAV_MAX = 12;
+
   // ============================================================
   // 快捷键配置（可按需修改）
   // ============================================================
@@ -377,10 +380,9 @@
   }
 
   // ============================================================
-  // 常用链接存储（固定+自定义，上限 24）
+  // 常用链接存储（固定+自定义）
   // ============================================================
   const FAV_KEY = 'ff14_fav_links';
-  const FAV_MAX = 12;
 
   function getFavLinks() {
     return Store.get(FAV_KEY, []);
@@ -1768,7 +1770,7 @@
   // ============================================================
   // 石之家页面
   // ============================================================
-  function addStoneHomeButton() {
+  function addRisingstonesButton() {
     // 找到 logo_stone 元素
     const logoStone = document.querySelector('.logo_stone.rel.cursor');
     if (!logoStone) return;
@@ -1840,10 +1842,10 @@
   if (host === 'ff14risingstones.web.sdo.com') {
     // 石之家页面：在导航栏左侧插入按钮
     waitForElement('.head_cent.w1146.mgauto.flex.space')
-      .then(() => addStoneHomeButton())
+      .then(() => addRisingstonesButton())
       .catch(() => {
         window.addEventListener('load', () => {
-          setTimeout(() => addStoneHomeButton(), 500);
+          setTimeout(() => addRisingstonesButton(), 500);
         });
       });
   } else if ((host.includes('ngabbs.com') || host.includes('nga.cn') || host.includes('nga.178.com')) && window.location.pathname === '/thread.php' && new URLSearchParams(window.location.search).get('fid') === '-362960') {
