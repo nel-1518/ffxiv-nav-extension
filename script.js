@@ -115,7 +115,7 @@
         { name: '优待服务器', url: 'https://ff.web.sdo.com/web8/index.html#/servers' },
         { name: '冒险录使用指南', url: 'https://actff1.web.sdo.com/project/20190918adventure/index.html' },
         { name: '[石之家]萌新招待', url: 'https://ff14risingstones.web.sdo.com/pc/index.html#/recruit/beginner' },
-        { name: '二次元吉田', url: 'https://actff1.web.sdo.com/project/20180228justice/index.html' },
+        { name: '吉田二人组', url: 'https://actff1.web.sdo.com/project/20180228justice/index.html' },
       ],
     },
     {
@@ -179,7 +179,7 @@
         { name: 'FANFEST2021', url: 'https://actff1.web.sdo.com/Fans2021/index.html#/index' },
         { name: 'FANFEST2024', url: 'https://actff1.web.sdo.com/project/20240202favn6b6tv8a8s8f8e8s8t/index.html#/index' },
         { name: '壁纸/铃声/表情包', url: 'https://ff.web.sdo.com/special/maverick7.0.html' },
-        { name: '最终幻想14 x ARTIST', url: 'https://actff1.web.sdo.com/Project/170421Fanfest' },
+        { name: '最终幻想14 x ARTIST', url: 'https://actff1.web.sdo.com/project/20250601artist/index.html#/index' },
       ],
     },
     {
@@ -1326,11 +1326,8 @@
       color: C.accent,
       cursor: 'pointer',
       padding: '4px 10px',
-      transition: 'all 0.15s',
       userSelect: 'none',
     });
-    themeBtn.addEventListener('mouseenter', () => { themeBtn.style.transform = 'scale(1.2)'; });
-    themeBtn.addEventListener('mouseleave', () => { themeBtn.style.transform = 'scale(1)'; });
     themeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const newMode = isDark ? 'light' : 'dark';
@@ -1419,7 +1416,7 @@
           padding: '5px 10px',
           color: C.link,
           textDecoration: 'none',
-          fontSize: '13px',
+          fontSize: '16px',
           fontWeight: isSeasonal ? '700' : '400',
           borderRadius: '4px',
           transition: 'all 0.15s',
