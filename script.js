@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FF14 官网导航
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  在 FF14 官网/石之家/NGA 增加一个按钮，用于打开导航窗口，方便访问 FF14 国服官网中的各种链接，也可以自定义常用链接快速访问。
 // @author       Nel
 // @match        *://ff.web.sdo.com/web8/*
@@ -524,8 +524,46 @@
         : '0 2px 16px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(255, 255, 255, 0.6)',
       clipPath: 'polygon(12px 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0% 50%)',
     });
+    // 让标题栏使用 flex 布局，以便将排序按钮推到右侧
+    favHeader.style.display = 'flex';
+    favHeader.style.alignItems = 'center';
     favHeader.appendChild(headerSpan);
     favHeader.appendChild(toggleHint);
+    // 编辑按钮
+    const sortBtn = document.createElement('span');
+    sortBtn.textContent = '✏️';
+    sortBtn.title = '编辑';
+    Object.assign(sortBtn.style, {
+      fontSize: '16px', fontWeight: '400', color: C.muted, marginLeft: 'auto',
+      cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s',
+      padding: '0 4px',
+    });
+    sortBtn.addEventListener('mouseenter', () => { sortBtn.style.color = C.accent; });
+    sortBtn.addEventListener('mouseleave', () => {
+      sortBtn.style.color = sortMode ? C.accent : C.muted;
+    });
+    sortBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortMode = !sortMode;
+      sortBtn.textContent = sortMode ? '✅' : '✏️';
+      sortBtn.title = sortMode ? '完成' : '编辑';
+      sortBtn.style.color = sortMode ? C.accent : C.muted;
+      sortBtn.style.textShadow = sortMode ? `0 0 6px ${C.accentGlow}` : 'none';
+      // 更新所有行的拖拽手柄、删除按钮和 draggable 状态
+      const allRows = favGrid.querySelectorAll('[data-url]');
+      allRows.forEach(r => {
+        const handle = r.firstElementChild;
+        if (handle && handle.tagName === 'SPAN' && handle.textContent === '⠿') {
+          handle.style.display = sortMode ? 'block' : 'none';
+        }
+        const del = r.querySelector('span:last-child');
+        if (del && del.textContent === '✕') {
+          del.style.display = sortMode ? 'block' : 'none';
+        }
+        r.draggable = sortMode;
+      });
+    });
+    favHeader.appendChild(sortBtn);
     favSection.appendChild(favHeader);
 
     // 可折叠容器
@@ -567,13 +605,16 @@
 
     // ---------- 内部辅助函数 ----------
 
+    // 排序模式状态
+    let sortMode = false;
+
     // 拖拽排序状态（共享给所有行）
     let dragSrcEl = null;
 
     function createFavRow(link) {
       const isCustom = link.isCustom;
       const row = document.createElement('div');
-      row.draggable = true;
+      row.draggable = false;
       row.dataset.url = link.url;
       row.dataset.isCustom = isCustom ? 'true' : 'false';
       Object.assign(row.style, {
@@ -692,16 +733,19 @@
         item.style.backgroundColor = C.linkHoverBg;
         item.style.color = C.accent;
         item.style.paddingLeft = '16px';
-        delBtn.style.display = 'block';
-        dragHandle.style.display = 'block';
       });
       row.addEventListener('mouseleave', () => {
         item.style.backgroundColor = 'transparent';
         item.style.color = C.favLink;
         item.style.paddingLeft = '12px';
-        delBtn.style.display = 'none';
-        dragHandle.style.display = 'none';
       });
+
+      // 如果已处于编辑模式，新创建的行也显示拖拽手柄和删除按钮
+      if (sortMode) {
+        dragHandle.style.display = 'block';
+        delBtn.style.display = 'block';
+        row.draggable = true;
+      }
 
       row.appendChild(dragHandle);
       row.appendChild(item);
