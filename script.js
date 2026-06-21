@@ -39,6 +39,40 @@
     FAV_5: '5', FAV_6: '6', FAV_7: '7', FAV_8: '8',
   };
 
+  // ============================================================
+  // 根据域名执行不同逻辑
+  // ============================================================
+  const host = window.location.hostname;
+
+  if (host === 'ff14risingstones.web.sdo.com') {
+    // 石之家页面：在导航栏左侧插入按钮
+    waitForElement('.head_cent.w1146.mgauto.flex.space')
+      .then(() => addRisingstonesButton())
+      .catch(() => {
+        window.addEventListener('load', () => {
+          setTimeout(() => addRisingstonesButton(), 500);
+        });
+      });
+  } else if ((host.includes('ngabbs.com') || host.includes('nga.cn') || host.includes('nga.178.com')) && window.location.pathname === '/thread.php' && new URLSearchParams(window.location.search).get('fid') === '-362960') {
+    // NGA 页面：仅在艾欧泽亚版块（fid=-362960）添加按钮
+    waitForElement('a[href="/thread.php?fid=-362960"]')
+      .then(() => addNgaButton())
+      .catch(() => {
+        window.addEventListener('load', () => {
+          setTimeout(() => addNgaButton(), 500);
+        });
+      });
+  } else {
+    // 官网页面：在左上角添加导航按钮
+    waitForElement('.lf a[href="#/index"]')
+      .then(() => addNavButton())
+      .catch(() => {
+        window.addEventListener('load', () => {
+          setTimeout(() => addNavButton(), 500);
+        });
+      });
+  }
+
   const linkCategories = [
     {
       title: '消费充值', icon: '💰',
@@ -856,13 +890,13 @@
 
       // 缩写输入
       const abbrLabel = document.createElement('div');
-      abbrLabel.textContent = '缩写（可选，字母，用于快速搜索）';
+      abbrLabel.textContent = '缩写（可选）';
       Object.assign(abbrLabel.style, { fontSize: '13px', color: C.catText, marginBottom: '4px' });
       box.appendChild(abbrLabel);
 
       const abbrInput = document.createElement('input');
       abbrInput.type = 'text';
-      abbrInput.placeholder = '例: cz (自动转为小写)';
+      abbrInput.placeholder = '用于快速搜索（例: ff）';
       Object.assign(abbrInput.style, {
         width: '100%', boxSizing: 'border-box', padding: '8px 10px',
         fontSize: '14px', borderRadius: '8px', marginBottom: '20px',
@@ -986,7 +1020,7 @@
       borderGlow: isDark ? 'rgba(115, 191, 230, 0.08)' : 'rgba(107, 131, 179, 0.06)',
       accent: isDark ? '#73aac6' : '#6b8db3',
       accentGlow: isDark ? 'rgba(115, 191, 230, 0.12)' : 'rgba(107, 131, 179, 0.1)',
-      muted: isDark ? 'rgb(153, 151, 151)' : 'rgb(145, 145, 145)',
+      muted: isDark ? 'rgba(153, 151, 151, 0.7)' : 'rgb(145, 145, 145, 0.7)',
       catBg: isDark ? 'rgb(49, 50, 57)' : 'rgb(235, 240, 245)',
       catText: isDark ? 'rgb(160, 190, 215)' : 'rgb(80, 105, 135)',
       link: isDark ? '#dddddd' : '#333333',
@@ -1027,9 +1061,8 @@
     Object.assign(dialog.style, {
       backgroundColor: 'rgba(0, 0, 0, 0)',
       background: isDark
-        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.9) 10%, rgba(32, 35, 40, 0.9) 90%)'
-        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.9) 10%, rgba(242, 244, 245, 0.9) 90%)',
-      backdropFilter: 'blur(12px)',
+        ? 'linear-gradient(315deg, rgba(24, 25, 26, 0.92) 10%, rgba(32, 35, 40, 0.92) 90%)'
+        : 'linear-gradient(315deg, rgba(227, 228, 230, 0.92) 10%, rgba(242, 244, 245, 0.92) 90%)',
       borderRadius: C.dialogBorderRadius,
       padding: '35px 35px',
       maxWidth: '820px',
@@ -1833,40 +1866,6 @@
     });
 
     targetLink.parentNode.insertBefore(navBtn, targetLink.nextSibling);
-  }
-
-  // ============================================================
-  // 根据域名执行不同逻辑
-  // ============================================================
-  const host = window.location.hostname;
-
-  if (host === 'ff14risingstones.web.sdo.com') {
-    // 石之家页面：在导航栏左侧插入按钮
-    waitForElement('.head_cent.w1146.mgauto.flex.space')
-      .then(() => addRisingstonesButton())
-      .catch(() => {
-        window.addEventListener('load', () => {
-          setTimeout(() => addRisingstonesButton(), 500);
-        });
-      });
-  } else if ((host.includes('ngabbs.com') || host.includes('nga.cn') || host.includes('nga.178.com')) && window.location.pathname === '/thread.php' && new URLSearchParams(window.location.search).get('fid') === '-362960') {
-    // NGA 页面：仅在艾欧泽亚版块（fid=-362960）添加按钮
-    waitForElement('a[href="/thread.php?fid=-362960"]')
-      .then(() => addNgaButton())
-      .catch(() => {
-        window.addEventListener('load', () => {
-          setTimeout(() => addNgaButton(), 500);
-        });
-      });
-  } else {
-    // 官网页面：在左上角添加导航按钮
-    waitForElement('.lf a[href="#/index"]')
-      .then(() => addNavButton())
-      .catch(() => {
-        window.addEventListener('load', () => {
-          setTimeout(() => addNavButton(), 500);
-        });
-      });
   }
 
 })();
